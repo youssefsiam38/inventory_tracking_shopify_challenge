@@ -1,6 +1,6 @@
 module github.com/youssefsiam38/inventory_tracking_shopify_challenge
 
-go 1.18
+go 1.14
 
 require (
 	github.com/gin-contrib/sse v0.1.0 // indirect
