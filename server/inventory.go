@@ -1,10 +1,13 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/youssefsiam38/inventory_tracking_shopify_challenge/domain"
+	"github.com/youssefsiam38/inventory_tracking_shopify_challenge/errors"
 	"github.com/youssefsiam38/inventory_tracking_shopify_challenge/service"
 )
 
@@ -18,56 +21,131 @@ func NewInventoryAPI(service service.IInventoryService) InventoryAPI {
 	}
 }
 
+func (api InventoryAPI) CreateView(c *gin.Context) {
+	c.HTML(http.StatusOK, "create.html", nil)
+}
+
 func (api InventoryAPI) Create(c *gin.Context) {
-	var inventory domain.InventoryItem
-	if err := c.ShouldBindJSON(&inventory); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	item := domain.InventoryItem{}
+	item.Name = c.PostForm("name")
+	item.Description = c.PostForm("description")
+	item.Slug = c.PostForm("slug")
+
+	if err := api.InventoryService.Create(item); err != nil {
+		fmt.Println("Error: ", err)
+		items, _ := api.InventoryService.List(false)
+		fmt.Println("Error: ", err)
+		if err, ok := errors.IsUserError(err); ok {
+			c.HTML(http.StatusOK, "list.html", gin.H{"Items": items, "Error": err.UserError()})
+			return
+		}
+		c.HTML(http.StatusOK, "list.html", gin.H{"Items": items, "Error": err})
 		return
 	}
-	if err := api.InventoryService.Create(inventory); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+
+	items, err := api.InventoryService.List(false)
+	if err != nil {
+		if err, ok := errors.IsUserError(err); ok {
+			c.HTML(http.StatusOK, "list.html", gin.H{"Items": items, "Error": err.UserError()})
+			return
+		}
+		c.HTML(http.StatusOK, "list.html", gin.H{"Items": items, "Error": err})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "success"})
+	c.HTML(http.StatusOK, "list.html", gin.H{"Items": items, "Error": err, "Message": "Created Successfully"})
 }
 
 func (api InventoryAPI) List(c *gin.Context) {
-	inventories, err := api.InventoryService.List()
+	strDeleted := c.Query("deleted")
+	fmt.Println("strDeleted: ", strDeleted)
+	deleted, err := strconv.ParseBool(strDeleted)
+	fmt.Println("deleted: ", deleted)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		deleted = false
+	}
+	items, err := api.InventoryService.List(deleted)
+	if err != nil {
+		c.HTML(http.StatusOK, "list.html", gin.H{"Items": items, "Error": err})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"inventories": inventories})
+
+	c.HTML(http.StatusOK, "list.html", gin.H{"Items": items, "Error": err, "Message": c.Query("msg")})
 }
 
-func (api InventoryAPI) GET(c *gin.Context) {
+func (api InventoryAPI) Get(c *gin.Context) {
 	slug := c.Param("slug")
-	inventory, err := api.InventoryService.GET(slug)
+	item, err := api.InventoryService.GET(slug)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		items, err := api.InventoryService.List(false)
+		c.HTML(http.StatusOK, "list.html", gin.H{"Items": items, "Error": err})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"inventory": inventory})
+	c.HTML(http.StatusOK, "show.html", item)
+}
+
+func (api InventoryAPI) UpdateView(c *gin.Context) {
+	slug := c.Param("slug")
+	item, err := api.InventoryService.GET(slug)
+	if err != nil {
+		items, err := api.InventoryService.List(false)
+		if err, ok := errors.IsUserError(err); ok {
+			c.HTML(http.StatusOK, "list.html", gin.H{"Items": items, "Error": err.UserError()})
+			return
+		}
+		c.HTML(http.StatusOK, "list.html", gin.H{"Items": items, "Error": err})
+		return
+	}
+	c.HTML(http.StatusOK, "edit.html", item)
 }
 
 func (api InventoryAPI) Update(c *gin.Context) {
-	var inventory domain.InventoryItem
-	if err := c.ShouldBindJSON(&inventory); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	item := domain.InventoryItem{}
+	item.Name = c.PostForm("name")
+	item.Description = c.PostForm("description")
+	item.Slug = c.PostForm("slug")
+	if err := api.InventoryService.Update(item); err != nil {
+		items, err := api.InventoryService.List(false)
+		if err, ok := errors.IsUserError(err); ok {
+			c.HTML(http.StatusOK, "list.html", gin.H{"Items": items, "Error": err.UserError()})
+			return
+		}
+		c.HTML(http.StatusOK, "list.html", gin.H{"Items": items, "Error": err})
 		return
 	}
-	if err := api.InventoryService.Update(inventory); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+
+	items, err := api.InventoryService.List(false)
+	if err != nil {
+		if err, ok := errors.IsUserError(err); ok {
+			c.HTML(http.StatusOK, "list.html", gin.H{"Items": items, "Error": err.UserError()})
+			return
+		}
+		c.HTML(http.StatusOK, "list.html", gin.H{"Items": items, "Error": err})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "success"})
+	c.HTML(http.StatusOK, "list.html", gin.H{"Items": items, "Error": err, "Message": "Updated Successfully"})
 }
 
-func (api InventoryAPI) DELETE(c *gin.Context) {
-	id := c.Param("id")
-	if err := api.InventoryService.DELETE(id); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+func (api InventoryAPI) Delete(c *gin.Context) {
+
+	slug := c.Param("slug")
+	if err := api.InventoryService.Delete(slug); err != nil {
+		items, err := api.InventoryService.List(false)
+		if err, ok := errors.IsUserError(err); ok {
+			c.HTML(http.StatusOK, "list.html", gin.H{"Items": items, "Error": err.UserError()})
+			return
+		}
+		c.HTML(http.StatusOK, "list.html", gin.H{"Items": items, "Error": err})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "success"})
+
+	items, err := api.InventoryService.List(false)
+	if err != nil {
+		if err, ok := errors.IsUserError(err); ok {
+			c.HTML(http.StatusOK, "list.html", gin.H{"Items": items, "Error": err.UserError()})
+			return
+		}
+		c.HTML(http.StatusOK, "list.html", gin.H{"Items": items, "Error": err})
+		return
+	}
+	c.Redirect(http.StatusMovedPermanently, "/inventory?msg=Deleted Successfully")
 }

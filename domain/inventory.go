@@ -2,6 +2,7 @@ package domain
 
 import (
 	"time"
+	"github.com/google/uuid"
 )
 
 type InventoryItem struct {
@@ -18,6 +19,14 @@ func (inventory InventoryItem) IsDeleted() bool {
 	return inventory.Deleted
 }
 
-func (inventory InventoryItem) UpdateUpdatedAt() {
+func (inventory *InventoryItem) UpdateUpdatedAt() {
 	inventory.UpdatedAt = time.Now()
+}
+
+func (inventory *InventoryItem) SetCreatedAt() {
+	inventory.CreatedAt = time.Now()
+}
+
+func (inventory *InventoryItem) GenerateID() {
+	inventory.ID = uuid.New().String()
 }
