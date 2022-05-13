@@ -34,9 +34,13 @@ func (repository InventoryReplitRepository) List() ([]domain.InventoryItem, erro
 		return nil, errors.UserError{Err: err, UserMessage: "Error listing inventory"}
 	}
 
-	for _, value := range list {
+	for _, key := range list {
 		inventoryItem := domain.InventoryItem{}
-		err := json.Unmarshal([]byte(value), &inventoryItem)
+		jsonInventoryItem, err := database.Get(key)
+		if err != nil {
+			return nil, errors.UserError{Err: err, UserMessage: "Error getting inventory"}
+		}
+		err = json.Unmarshal([]byte(jsonInventoryItem), &inventoryItem)
 		if err != nil {
 			return nil, errors.UserError{Err: err, UserMessage: "Error unmarshalling inventory"}
 		}
@@ -51,8 +55,8 @@ func (repository InventoryReplitRepository) GET(slug string) (domain.InventoryIt
 	if err != nil {
 		return inventoryItem, errors.UserError{Err: err, UserMessage: "Error getting inventory"}
 	}
-	json.Unmarshal([]byte(jsonInventoryItem), &inventoryItem)
-	return inventoryItem, nil
+	err = json.Unmarshal([]byte(jsonInventoryItem), &inventoryItem)
+	return inventoryItem, err
 }
 
 func (repository InventoryReplitRepository) Update(inventory domain.InventoryItem) error {
