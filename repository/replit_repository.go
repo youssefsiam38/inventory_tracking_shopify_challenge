@@ -80,8 +80,8 @@ func (repository InventoryReplitRepository) Delete(item domain.InventoryItem) er
 	}
 	inventoryItem.Deleted = true
 	inventoryItem.UpdateUpdatedAt()
+	inventoryItem.DeleteComment = item.DeleteComment
 
-	
 	bytes, err := json.Marshal(inventoryItem)
 	if err != nil {
 		return errors.UserError{Err: err, UserMessage: "Error marshalling inventory"}

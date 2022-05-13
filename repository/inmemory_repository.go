@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"fmt"
+
 	"github.com/youssefsiam38/inventory_tracking_shopify_challenge/domain"
 	"github.com/youssefsiam38/inventory_tracking_shopify_challenge/errors"
 )

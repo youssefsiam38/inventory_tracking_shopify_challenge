@@ -38,7 +38,7 @@ func StartServer(apis APIs) {
 	itemsSubRouter.POST("/:slug", apis.InventoryAPI.Update)
 
 	// delete
-	itemsSubRouter.POST("/delete/:slug", apis.InventoryAPI.Delete)
+	itemsSubRouter.POST("/delete", apis.InventoryAPI.Delete)
 
 	router.GET("/healthz", func(ctx *gin.Context) {
 		ctx.Writer.Write([]byte("OK"))

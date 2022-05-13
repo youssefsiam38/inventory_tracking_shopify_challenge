@@ -103,6 +103,12 @@ func (api InventoryAPI) Update(c *gin.Context) {
 	item.Name = c.PostForm("name")
 	item.Description = c.PostForm("description")
 	item.Slug = c.PostForm("slug")
+	strDeleted := c.PostForm("deleted")
+	var err error
+	item.Deleted, err = strconv.ParseBool(strDeleted)
+	if err != nil {
+		item.Deleted = false
+	}
 	if err := api.InventoryService.Update(item); err != nil {
 		items, err := api.InventoryService.List(false)
 		if err, ok := errors.IsUserError(err); ok {
@@ -127,8 +133,9 @@ func (api InventoryAPI) Update(c *gin.Context) {
 
 func (api InventoryAPI) Delete(c *gin.Context) {
 
-	slug := c.Param("slug")
-	if err := api.InventoryService.Delete(slug); err != nil {
+	slug := c.PostForm("slug")
+	comment := c.PostForm("comment")
+	if err := api.InventoryService.Delete(slug, comment); err != nil {
 		items, err := api.InventoryService.List(false)
 		if err, ok := errors.IsUserError(err); ok {
 			c.HTML(http.StatusOK, "list.html", gin.H{"Items": items, "Error": err.UserError()})

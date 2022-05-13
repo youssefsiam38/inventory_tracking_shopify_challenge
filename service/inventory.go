@@ -13,7 +13,7 @@ type IInventoryService interface {
 	List(deleted bool) ([]domain.InventoryItem, error)
 	GET(slug string) (domain.InventoryItem, error)
 	Update(inventory domain.InventoryItem) error
-	Delete(slug string) error
+	Delete(slug, comment string) error
 }
 
 type InventoryService struct {
@@ -73,16 +73,19 @@ func (service InventoryService) Update(item domain.InventoryItem) error {
 	if err == nil {
 		item.UpdateUpdatedAt()
 		item.CreatedAt = oldItem.CreatedAt
+		item.ID = oldItem.ID
+		item.DeleteComment = oldItem.DeleteComment
 		return service.repository.Update(item)
 	}
 	return errors.UserError{Err: nil, UserMessage: "There is already an item with this slug"}
 }
 
-func (service InventoryService) Delete(slug string) error {
+func (service InventoryService) Delete(slug, comment string) error {
 	item, err := service.repository.GET(slug)
 	if err != nil {
 		return errors.UserError{Err: nil, UserMessage: "There is no item with this slug"}
 	}
 	item.UpdateUpdatedAt()
+	item.DeleteComment = comment
 	return service.repository.Delete(item)
 }

@@ -33,6 +33,11 @@
                                 <div class="flex items-center mb-4 space-x-2">
                                     <span class="text-xs text-gray-500">Updated At: {{ .UpdatedAt.Format "Mon 2006-01-02 3:4:5 pm" }}</span>
                                 </div>
+                                {{ if .Deleted }}
+                                <div class="flex items-center mb-4 space-x-2">
+                                    <span class="text-xs text-gray-500">Delete Comment: {{ .DeleteComment }}</span>
+                                </div>
+                                {{ end }}
                                 <p class="text-base text-gray-700">{{ .Description }}</p>
                             </div>
                         </form>
