@@ -1,8 +1,10 @@
 package domain
 
 import (
-	"github.com/google/uuid"
+	"regexp"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type InventoryItem struct {
@@ -30,4 +32,8 @@ func (inventory *InventoryItem) SetCreatedAt() {
 
 func (inventory *InventoryItem) GenerateID() {
 	inventory.ID = uuid.New().String()
+}
+
+func (inventory InventoryItem) SlugISalphanumeric() bool {
+	return regexp.MustCompile(`^[a-zA-Z0-9]*$`).MatchString(inventory.Slug)
 }

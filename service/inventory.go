@@ -27,6 +27,9 @@ func NewInventoryService(repo repository.IInventoryRepository) IInventoryService
 }
 
 func (service InventoryService) Create(inventory domain.InventoryItem) error {
+	if !inventory.SlugISalphanumeric() {
+		return errors.UserError{Err: nil, UserMessage: "Slug must be alphanumeric"}
+	}
 
 	_, err := service.repository.GET(inventory.Slug)
 	if err != nil {
@@ -69,6 +72,10 @@ func (service InventoryService) GET(slug string) (domain.InventoryItem, error) {
 }
 
 func (service InventoryService) Update(item domain.InventoryItem) error {
+	if !item.SlugISalphanumeric() {
+		return errors.UserError{Err: nil, UserMessage: "Slug must be alphanumeric"}
+	}
+
 	oldItem, err := service.repository.GET(item.Slug)
 	if err == nil {
 		item.UpdateUpdatedAt()

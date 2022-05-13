@@ -110,7 +110,7 @@ func (api InventoryAPI) Update(c *gin.Context) {
 		item.Deleted = false
 	}
 	if err := api.InventoryService.Update(item); err != nil {
-		items, err := api.InventoryService.List(false)
+		items, _ := api.InventoryService.List(false)
 		if err, ok := errors.IsUserError(err); ok {
 			c.HTML(http.StatusOK, "list.html", gin.H{"Items": items, "Error": err.UserError()})
 			return
