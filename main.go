@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	dbType := getenv.String("DB", "inmemory")
+	dbType := getenv.String("DB", "replit")
 	db := flag.String("db", dbType, "db type (replit/inmemory)")
 	flag.Parse()
 
