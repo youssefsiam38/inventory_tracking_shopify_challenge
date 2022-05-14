@@ -6,7 +6,7 @@
     "configurations": [
         {
             "name": "Launch Package",
-            "type": "go",
+            "type": "go1.14.15",
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/main.go"

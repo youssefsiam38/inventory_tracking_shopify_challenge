@@ -38,7 +38,7 @@
         </div>
         <div class="flex justify-end">
           <button id="createButton" class="px-4 py-2 rounded-md bg-sky-500 text-sky-100 hover:bg-sky-600">
-            Create Post
+            Create Item
           </button>
         </div>
       </div>
@@ -148,12 +148,14 @@
     };
 
     {{ range $key, $value := $.Items }}
-      document.querySelector('#deleteButton-{{ $value.Slug }}').addEventListener('click', function (e) {
-        e.preventDefault();
-        deleteState.slug = {{ $value.Slug }};
-        var elem = document.getElementById("deletedItemSlug");
-        elem.innerHTML = deleteState.slug;
-      });
+      {{ if not $value.Deleted }}
+        document.querySelector('#deleteButton-{{ $value.Slug }}').addEventListener('click', function (e) {
+          e.preventDefault();
+          deleteState.slug = {{ $value.Slug }};
+          var elem = document.getElementById("deletedItemSlug");
+          elem.innerHTML = deleteState.slug;
+        });
+      {{ end }}
     {{ end }}
 
     document.querySelector('#createButton').addEventListener('click', function (e) {
